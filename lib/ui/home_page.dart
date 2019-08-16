@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:contatos/ui/contact_page.dart';
 import 'package:flutter/material.dart';
 import 'package:contatos/helpers/contact_helper.dart';
 
@@ -18,11 +19,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     // Contact c = Contact(name: 'Lucas', email: 'lucassrod@gmail.com', phone: '31991256055', img: 'teste');
     // helper.save(c);
-    helper.fetchAll().then((list) {
-      setState(() {
-        contacts = list;
-      });
-    });
+    _getAllContacts();
   }
   @override
   Widget build(BuildContext context) {
@@ -34,7 +31,7 @@ class _HomePageState extends State<HomePage> {
       ),
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
-        onPressed: (){},
+        onPressed: (){ _showContactPage(); },
         child: Icon(Icons.add),
         backgroundColor: Colors.red,
       ),
@@ -84,6 +81,32 @@ class _HomePageState extends State<HomePage> {
           )
         ),
       ),
+      onTap: () { _showContactPage(contact: contacts[index]); },
     );
+  }
+
+  void _getAllContacts() {
+    helper.fetchAll().then((list) {
+      setState(() {
+        contacts = list;
+      });
+    });
+  }
+
+  void _showContactPage({Contact contact}) async {
+    final reqContact = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ContactPage(
+        contact: contact,
+      ))
+    );
+    if (reqContact != null) {
+      if (contact != null) {
+        await helper.update(reqContact);
+      } else {
+        await helper.save(reqContact);
+      }
+      _getAllContacts();
+    }
   }
 }
